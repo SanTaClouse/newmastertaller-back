@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: mitaller-db
+    environment:
+      POSTGRES_USER: mitaller
+      POSTGRES_PASSWORD: mitaller123
+      POSTGRES_DB: mitaller
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mitaller']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mitaller-backend
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://mitaller:mitaller123@postgres:5432/mitaller
+      JWT_SECRET: dev-secret-change-in-production
+      JWT_EXPIRES_IN: 24h
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - '3001:3001'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run start:dev
+
+volumes:
+  postgres_data:

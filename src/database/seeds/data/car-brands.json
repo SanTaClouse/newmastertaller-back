@@ -1,0 +1,14 @@
+[
+  { "name": "Volkswagen", "models": ["Gol Trend", "Polo", "Amarok", "Vento", "Taos", "T-Cross", "Saveiro", "Suran"] },
+  { "name": "Fiat", "models": ["Cronos", "Argo", "Strada", "Mobi", "Toro", "Pulse", "Fastback"] },
+  { "name": "Ford", "models": ["Ranger", "EcoSport", "Ka", "Focus", "Fiesta", "Territory", "Bronco Sport"] },
+  { "name": "Chevrolet", "models": ["Onix", "Cruze", "Tracker", "S10", "Spin", "Montana"] },
+  { "name": "Toyota", "models": ["Hilux", "Corolla", "Etios", "Yaris", "SW4", "Corolla Cross", "RAV4"] },
+  { "name": "Renault", "models": ["Sandero", "Logan", "Duster", "Kangoo", "Kwid", "Stepway", "Captur"] },
+  { "name": "Peugeot", "models": ["208", "308", "2008", "3008", "Partner"] },
+  { "name": "Citroën", "models": ["C3", "C4 Cactus", "Berlingo", "C4 Lounge"] },
+  { "name": "Honda", "models": ["HR-V", "Civic", "City", "WR-V", "CR-V"] },
+  { "name": "Nissan", "models": ["Frontier", "Kicks", "Versa", "Sentra", "X-Trail"] },
+  { "name": "Hyundai", "models": ["Tucson", "Creta", "HB20", "Santa Fe"] },
+  { "name": "Jeep", "models": ["Renegade", "Compass", "Commander", "Wrangler"] }
+]
