@@ -17,6 +17,7 @@ import { RepairPhasesModule } from './modules/repair-phases/repair-phases.module
 import { StatsModule } from './modules/stats/stats.module';
 import { CarCatalogModule } from './modules/car-catalog/car-catalog.module';
 import { PublicTrackingModule } from './modules/public-tracking/public-tracking.module';
+import { BootstrapSeedService } from './database/seeds/bootstrap-seed.service';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PublicTrackingModule } from './modules/public-tracking/public-tracking.
       useFactory: (reflector: Reflector) => new TenantContextInterceptor(reflector),
       inject: [Reflector],
     },
+    BootstrapSeedService,
   ],
 })
 export class AppModule {}

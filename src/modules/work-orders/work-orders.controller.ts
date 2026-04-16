@@ -17,8 +17,10 @@ export class WorkOrdersController {
     @Query('search') search?: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
+    @Query('includeFinancials') includeFinancials?: string,
+    @Query('vehicleId') vehicleId?: string,
   ) {
-    return this.service.findAll(page, limit, status, search, from, to);
+    return this.service.findAll(page, limit, status, search, from, to, includeFinancials === 'true', vehicleId);
   }
 
   @Get(':id')
@@ -44,6 +46,11 @@ export class WorkOrdersController {
   @Post(':id/complete')
   complete(@Param('id') id: string) {
     return this.service.complete(id);
+  }
+
+  @Post(':id/retire')
+  retire(@Param('id') id: string) {
+    return this.service.retire(id);
   }
 
   @Post(':id/advance-phase')

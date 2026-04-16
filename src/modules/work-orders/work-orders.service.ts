@@ -7,6 +7,7 @@ import { WorkOrderPhaseLog } from './work-order-phase-log.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
 import { Expense } from '../expenses/expense.entity';
 import { RepairPhase } from '../repair-phases/repair-phase.entity';
+import { Client } from '../clients/client.entity';
 import { CreateWorkOrderDto, SetPhaseDto, UpdateWorkOrderDto } from './dto/create-work-order.dto';
 import { TenantContext } from '../../common/context/tenant.context';
 
@@ -39,17 +40,20 @@ export class WorkOrdersService {
     const expenses = await this.expenseRepo.find({ where: { workOrderId: order.id, tenantId } });
     const phaseLogs = await this.phaseLogRepo.find({ where: { workOrderId: order.id, tenantId }, order: { enteredAt: 'ASC' } });
     const vehicle = await this.vehicleRepo.findOne({ where: { id: order.vehicleId } });
+    const client = order.clientId
+      ? await this.dataSource.getRepository(Client).findOne({ where: { id: order.clientId } })
+      : null;
 
     const totalExpenses = expenses.reduce((s, e) => s + Number(e.cost), 0);
     const netProfit = Number(order.totalPrice) - totalExpenses;
 
-    return { ...order, vehicle, expenses, phaseLogs, totalExpenses, netProfit };
+    return { ...order, vehicle, client, expenses, phaseLogs, totalExpenses, netProfit };
   }
 
-  async findAll(page = 1, limit = 20, status?: string, search?: string, from?: string, to?: string) {
+  async findAll(page = 1, limit = 20, status?: string, search?: string, from?: string, to?: string, includeFinancials = false, vehicleId?: string) {
     const tenantId = TenantContext.getTenantId();
     const qb = this.orderRepo.createQueryBuilder('wo')
-      .leftJoinAndMapOne('wo.vehicle', Vehicle, 'v', 'v.id = wo.vehicleId')
+      .leftJoinAndMapOne('wo.vehicle', Vehicle, 'v', 'CAST(v.id AS varchar) = wo."vehicleId"')
       .where('wo.tenantId = :tenantId', { tenantId })
       .orderBy('wo.createdAt', 'DESC')
       .skip((page - 1) * limit)
@@ -57,15 +61,27 @@ export class WorkOrdersService {
 
     if (status) qb.andWhere('wo.status = :status', { status });
     if (from) qb.andWhere('wo.enteredAt >= :from', { from });
-    if (to) qb.andWhere('wo.enteredAt <= :to', { to });
+    if (to) {
+      // Include the full day by setting end to 23:59:59
+      const toEnd = new Date(to);
+      toEnd.setHours(23, 59, 59, 999);
+      qb.andWhere('wo.enteredAt <= :toEnd', { toEnd });
+    }
     if (search) {
       qb.andWhere(
         '(v.brand ILIKE :s OR v.model ILIKE :s OR v.plate ILIKE :s OR wo.description ILIKE :s OR wo.trackingCode ILIKE :s)',
         { s: `%${search}%` },
       );
     }
+    if (vehicleId) qb.andWhere('wo."vehicleId" = :vehicleId', { vehicleId });
 
     const [data, total] = await qb.getManyAndCount();
+
+    if (includeFinancials) {
+      const enriched = await Promise.all(data.map((o) => this.buildOrderResponse(o)));
+      return { data: enriched, total, page, limit };
+    }
+
     return { data, total, page, limit };
   }
 
@@ -167,6 +183,19 @@ export class WorkOrdersService {
 
     order.status = WorkOrderStatus.COMPLETED;
     order.completedAt = new Date();
+    const saved = await this.orderRepo.save(order);
+    return this.buildOrderResponse(saved);
+  }
+
+  async retire(id: string) {
+    const tenantId = TenantContext.getTenantId();
+    const order = await this.orderRepo.findOne({ where: { id, tenantId } });
+    if (!order) throw new NotFoundException('Orden no encontrada');
+    if (order.status !== WorkOrderStatus.COMPLETED && order.status !== WorkOrderStatus.RETIRED) {
+      throw new BadRequestException('Solo se puede retirar una orden completada');
+    }
+    order.status = WorkOrderStatus.RETIRED;
+    order.retiredAt = new Date();
     const saved = await this.orderRepo.save(order);
     return this.buildOrderResponse(saved);
   }

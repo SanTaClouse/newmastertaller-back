@@ -111,14 +111,14 @@ async function seed(fresh = false) {
   // 6. Vehículos demo
   console.log('🚙 Seeding vehículos demo...');
   const vehiclesData = [
-    { brand: 'Volkswagen', model: 'Gol Trend', year: 2018, plate: 'AC 234 FG', clientIndex: 0 },
-    { brand: 'Fiat', model: 'Cronos', year: 2021, plate: 'MNO 456', clientIndex: 1 },
-    { brand: 'Toyota', model: 'Hilux', year: 2020, plate: 'AB 123 CD', clientIndex: 2 },
-    { brand: 'Ford', model: 'Ranger', year: 2019, plate: 'EF 456 GH', clientIndex: 3 },
-    { brand: 'Fiat', model: 'Argo', year: 2022, plate: 'IJ 789 KL', clientIndex: 4 },
-    { brand: 'Peugeot', model: '208', year: 2021, plate: 'QR 012 ST', clientIndex: 5 },
-    { brand: 'Volkswagen', model: 'Amarok', year: 2023, plate: 'UV 345 WX', clientIndex: 6 },
-    { brand: 'Chevrolet', model: 'Cruze', year: 2017, plate: 'YZ 678 AB', clientIndex: 7 },
+    { brand: 'Fiat', model: 'Uno', year: 2014, plate: 'AC 234 FG', clientIndex: 0 },
+    // { brand: 'Fiat', model: 'Cronos', year: 2021, plate: 'MNO 456', clientIndex: 1 },
+    // { brand: 'Toyota', model: 'Hilux', year: 2020, plate: 'AB 123 CD', clientIndex: 2 },
+    // { brand: 'Ford', model: 'Ranger', year: 2019, plate: 'EF 456 GH', clientIndex: 3 },
+    // { brand: 'Fiat', model: 'Argo', year: 2022, plate: 'IJ 789 KL', clientIndex: 4 },
+    // { brand: 'Peugeot', model: '208', year: 2021, plate: 'QR 012 ST', clientIndex: 5 },
+    // { brand: 'Volkswagen', model: 'Amarok', year: 2023, plate: 'UV 345 WX', clientIndex: 6 },
+    // { brand: 'Chevrolet', model: 'Cruze', year: 2017, plate: 'YZ 678 AB', clientIndex: 7 },
   ];
   const savedVehicles: Vehicle[] = [];
   for (const v of vehiclesData) {
@@ -137,24 +137,24 @@ async function seed(fresh = false) {
   console.log('📋 Seeding órdenes demo...');
   const ordersData = [
     { vehicleIndex: 0, clientIndex: 0, description: 'Cambio de aceite + filtros', totalPrice: 45000, laborCost: 30000, status: WorkOrderStatus.NEW, daysAgo: 0, phaseIndex: 0 },
-    { vehicleIndex: 1, clientIndex: 1, description: 'Cambio de correa de distribución', totalPrice: 120000, laborCost: 85000, status: WorkOrderStatus.PROGRESS, daysAgo: 2, phaseIndex: 2 },
-    { vehicleIndex: 2, clientIndex: 2, description: 'Service completo 50.000km', totalPrice: 85000, laborCost: 45000, status: WorkOrderStatus.PROGRESS, daysAgo: 1, phaseIndex: 3 },
-    { vehicleIndex: 3, clientIndex: 3, description: 'Cambio de pastillas + discos', totalPrice: 95000, laborCost: 35000, status: WorkOrderStatus.DELAYED, daysAgo: 5, phaseIndex: 3 },
-    { vehicleIndex: 4, clientIndex: 4, description: 'Diagnóstico electrónico', totalPrice: 25000, laborCost: 25000, status: WorkOrderStatus.NEW, daysAgo: 0, phaseIndex: 0 },
-    { vehicleIndex: 5, clientIndex: 5, description: 'Reparación de aire acondicionado', totalPrice: 75000, laborCost: 40000, status: WorkOrderStatus.COMPLETED, daysAgo: 3, phaseIndex: 6 },
-    { vehicleIndex: 6, clientIndex: 6, description: 'Alineación y balanceo', totalPrice: 35000, laborCost: 27000, status: WorkOrderStatus.COMPLETED, daysAgo: 4, phaseIndex: 6 },
-    { vehicleIndex: 7, clientIndex: 7, description: 'Cambio de embrague', totalPrice: 180000, laborCost: 80000, status: WorkOrderStatus.PROGRESS, daysAgo: 3, phaseIndex: 4 },
+    // { vehicleIndex: 1, clientIndex: 1, description: 'Cambio de correa de distribución', totalPrice: 120000, laborCost: 85000, status: WorkOrderStatus.PROGRESS, daysAgo: 2, phaseIndex: 2 },
+    // { vehicleIndex: 2, clientIndex: 2, description: 'Service completo 50.000km', totalPrice: 85000, laborCost: 45000, status: WorkOrderStatus.PROGRESS, daysAgo: 1, phaseIndex: 3 },
+    // { vehicleIndex: 3, clientIndex: 3, description: 'Cambio de pastillas + discos', totalPrice: 95000, laborCost: 35000, status: WorkOrderStatus.DELAYED, daysAgo: 5, phaseIndex: 3 },
+    // { vehicleIndex: 4, clientIndex: 4, description: 'Diagnóstico electrónico', totalPrice: 25000, laborCost: 25000, status: WorkOrderStatus.NEW, daysAgo: 0, phaseIndex: 0 },
+    // { vehicleIndex: 5, clientIndex: 5, description: 'Reparación de aire acondicionado', totalPrice: 75000, laborCost: 40000, status: WorkOrderStatus.COMPLETED, daysAgo: 3, phaseIndex: 6 },
+    // { vehicleIndex: 6, clientIndex: 6, description: 'Alineación y balanceo', totalPrice: 35000, laborCost: 27000, status: WorkOrderStatus.COMPLETED, daysAgo: 4, phaseIndex: 6 },
+    // { vehicleIndex: 7, clientIndex: 7, description: 'Cambio de embrague', totalPrice: 180000, laborCost: 80000, status: WorkOrderStatus.PROGRESS, daysAgo: 3, phaseIndex: 4 },
   ];
 
   const expensesData = [
     [{ description: 'Aceite Castrol 10W40 x4L', cost: 8500 }, { description: 'Filtro de aceite Mann', cost: 3200 }],
-    [{ description: 'Kit distribución Gates', cost: 35000 }],
-    [{ description: 'Kit filtros completo', cost: 18000 }, { description: 'Aceite Shell Helix 5W30 x7L', cost: 12000 }],
-    [{ description: 'Pastillas Ferodo', cost: 22000 }, { description: 'Discos Fremax x2', cost: 38000 }],
-    [],
-    [{ description: 'Gas refrigerante R134a', cost: 12000 }, { description: 'Válvula expansión', cost: 10000 }],
-    [{ description: 'Contrapesos', cost: 3000 }],
-    [{ description: 'Kit embrague Valeo', cost: 55000 }, { description: 'Volante bimasa', cost: 45000 }],
+    // [{ description: 'Kit distribución Gates', cost: 35000 }],
+    // [{ description: 'Kit filtros completo', cost: 18000 }, { description: 'Aceite Shell Helix 5W30 x7L', cost: 12000 }],
+    // [{ description: 'Pastillas Ferodo', cost: 22000 }, { description: 'Discos Fremax x2', cost: 38000 }],
+    // [],
+    // [{ description: 'Gas refrigerante R134a', cost: 12000 }, { description: 'Válvula expansión', cost: 10000 }],
+    // [{ description: 'Contrapesos', cost: 3000 }],
+    // [{ description: 'Kit embrague Valeo', cost: 55000 }, { description: 'Volante bimasa', cost: 45000 }],
   ];
 
   for (let i = 0; i < ordersData.length; i++) {

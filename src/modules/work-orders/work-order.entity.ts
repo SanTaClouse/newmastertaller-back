@@ -9,6 +9,7 @@ export enum WorkOrderStatus {
   DELAYED = 'delayed',
   COMPLETED = 'completed',
   INCOMPLETE = 'incomplete',
+  RETIRED = 'retired',
 }
 
 @Entity('work_orders')
@@ -50,6 +51,9 @@ export class WorkOrder {
 
   @Column({ type: 'timestamp', nullable: true })
   completedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  retiredAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;
