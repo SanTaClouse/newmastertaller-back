@@ -31,8 +31,17 @@ export class Vehicle {
   @Column({ nullable: true })
   color: string;
 
+  @Column({ nullable: true })
+  engine: string;
+
   @Column({ type: 'text', nullable: true })
   notes: string;
+
+  @Column({ type: 'int', nullable: true })
+  lastMileage: number;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  lastMileageAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;

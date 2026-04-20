@@ -69,7 +69,7 @@ export class VehiclesService {
 
   async addMileageLog(vehicleId: string, dto: CreateMileageLogDto) {
     const tenantId = TenantContext.getTenantId();
-    await this.findOne(vehicleId); // validates ownership
+    const vehicle = await this.findOne(vehicleId);
     const log = this.mileageRepo.create({
       tenantId,
       vehicleId,
@@ -78,7 +78,12 @@ export class VehiclesService {
       workOrderId: dto.workOrderId,
       notes: dto.notes,
     });
-    return this.mileageRepo.save(log);
+    await this.mileageRepo.save(log);
+    // Update denormalized summary if this is the most recent log
+    if (!vehicle.lastMileageAt || log.recordedAt >= vehicle.lastMileageAt) {
+      await this.repo.update(vehicleId, { lastMileage: log.mileage, lastMileageAt: log.recordedAt });
+    }
+    return log;
   }
 
   async removeMileageLog(vehicleId: string, logId: string) {
@@ -86,6 +91,15 @@ export class VehiclesService {
     const log = await this.mileageRepo.findOne({ where: { id: logId, vehicleId, tenantId } });
     if (!log) throw new NotFoundException('Registro de kilometraje no encontrado');
     await this.mileageRepo.delete(log.id);
+    // Recompute denormalized summary from remaining logs
+    const latest = await this.mileageRepo.findOne({
+      where: { vehicleId, tenantId },
+      order: { recordedAt: 'DESC' },
+    });
+    await this.repo.update(vehicleId, {
+      lastMileage: (latest ? latest.mileage : null) as unknown as number,
+      lastMileageAt: (latest ? latest.recordedAt : null) as unknown as Date,
+    });
     return { message: 'Registro eliminado' };
   }
 }

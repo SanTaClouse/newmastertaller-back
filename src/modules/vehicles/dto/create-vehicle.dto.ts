@@ -28,5 +28,9 @@ export class CreateVehicleDto {
 
   @IsString()
   @IsOptional()
+  engine?: string;
+
+  @IsString()
+  @IsOptional()
   notes?: string;
 }
