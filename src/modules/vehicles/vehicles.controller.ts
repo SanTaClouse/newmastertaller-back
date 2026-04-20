@@ -5,6 +5,7 @@ import {
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
+import { CreateMileageLogDto } from './dto/create-mileage-log.dto';
 
 @Controller('vehicles')
 export class VehiclesController {
@@ -37,5 +38,22 @@ export class VehiclesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
+  }
+
+  // ── Mileage logs ────────────────────────────────────────────────────────────
+
+  @Get(':id/mileage')
+  getMileageLogs(@Param('id') id: string) {
+    return this.service.getMileageLogs(id);
+  }
+
+  @Post(':id/mileage')
+  addMileageLog(@Param('id') id: string, @Body() dto: CreateMileageLogDto) {
+    return this.service.addMileageLog(id, dto);
+  }
+
+  @Delete(':id/mileage/:logId')
+  removeMileageLog(@Param('id') id: string, @Param('logId') logId: string) {
+    return this.service.removeMileageLog(id, logId);
   }
 }

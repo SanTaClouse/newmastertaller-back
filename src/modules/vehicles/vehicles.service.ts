@@ -2,13 +2,18 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vehicle } from './vehicle.entity';
+import { VehicleMileageLog } from './vehicle-mileage-log.entity';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
+import { CreateMileageLogDto } from './dto/create-mileage-log.dto';
 import { TenantContext } from '../../common/context/tenant.context';
 
 @Injectable()
 export class VehiclesService {
-  constructor(@InjectRepository(Vehicle) private repo: Repository<Vehicle>) {}
+  constructor(
+    @InjectRepository(Vehicle) private repo: Repository<Vehicle>,
+    @InjectRepository(VehicleMileageLog) private mileageRepo: Repository<VehicleMileageLog>,
+  ) {}
 
   async findAll(page = 1, limit = 20, search?: string) {
     const tenantId = TenantContext.getTenantId();
@@ -49,5 +54,38 @@ export class VehiclesService {
     const vehicle = await this.findOne(id);
     await this.repo.softDelete(vehicle.id);
     return { message: 'Vehículo eliminado' };
+  }
+
+  // ── Mileage logs ────────────────────────────────────────────────────────────
+
+  async getMileageLogs(vehicleId: string) {
+    const tenantId = TenantContext.getTenantId();
+    await this.findOne(vehicleId); // validates ownership
+    return this.mileageRepo.find({
+      where: { tenantId, vehicleId },
+      order: { recordedAt: 'DESC' },
+    });
+  }
+
+  async addMileageLog(vehicleId: string, dto: CreateMileageLogDto) {
+    const tenantId = TenantContext.getTenantId();
+    await this.findOne(vehicleId); // validates ownership
+    const log = this.mileageRepo.create({
+      tenantId,
+      vehicleId,
+      mileage: dto.mileage,
+      recordedAt: new Date(dto.recordedAt),
+      workOrderId: dto.workOrderId,
+      notes: dto.notes,
+    });
+    return this.mileageRepo.save(log);
+  }
+
+  async removeMileageLog(vehicleId: string, logId: string) {
+    const tenantId = TenantContext.getTenantId();
+    const log = await this.mileageRepo.findOne({ where: { id: logId, vehicleId, tenantId } });
+    if (!log) throw new NotFoundException('Registro de kilometraje no encontrado');
+    await this.mileageRepo.delete(log.id);
+    return { message: 'Registro eliminado' };
   }
 }
