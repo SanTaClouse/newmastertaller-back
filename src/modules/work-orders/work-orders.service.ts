@@ -5,6 +5,7 @@ import { customAlphabet } from 'nanoid';
 import { WorkOrder, WorkOrderStatus } from './work-order.entity';
 import { WorkOrderPhaseLog } from './work-order-phase-log.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
+import { VehicleMileageLog } from '../vehicles/vehicle-mileage-log.entity';
 import { Expense } from '../expenses/expense.entity';
 import { RepairPhase } from '../repair-phases/repair-phase.entity';
 import { Client } from '../clients/client.entity';
@@ -166,6 +167,41 @@ export class WorkOrdersService {
     if (!order) throw new NotFoundException('Orden no encontrada');
     await this.orderRepo.softDelete(id);
     return { message: 'Orden eliminada' };
+  }
+
+  async purge(id: string) {
+    const tenantId = TenantContext.getTenantId();
+    const order = await this.orderRepo.findOne({ where: { id, tenantId }, withDeleted: true });
+    if (!order) throw new NotFoundException('Orden no encontrada');
+
+    const { vehicleId, clientId } = order;
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.delete(WorkOrderPhaseLog, { workOrderId: id, tenantId });
+      await manager.delete(Expense, { workOrderId: id, tenantId });
+      await manager.delete(WorkOrder, { id, tenantId });
+
+      const otherOrdersForVehicle = await manager.count(WorkOrder, {
+        where: { vehicleId, tenantId },
+        withDeleted: true,
+      });
+      if (otherOrdersForVehicle === 0) {
+        await manager.delete(VehicleMileageLog, { vehicleId, tenantId });
+        await manager.delete(Vehicle, { id: vehicleId, tenantId });
+      }
+
+      if (clientId) {
+        const otherOrdersForClient = await manager.count(WorkOrder, {
+          where: { clientId, tenantId },
+          withDeleted: true,
+        });
+        if (otherOrdersForClient === 0) {
+          await manager.delete(Client, { id: clientId, tenantId });
+        }
+      }
+    });
+
+    return { message: 'Orden y datos asociados eliminados permanentemente' };
   }
 
   async complete(id: string) {

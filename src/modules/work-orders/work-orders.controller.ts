@@ -43,6 +43,11 @@ export class WorkOrdersController {
     return this.service.remove(id);
   }
 
+  @Delete(':id/purge')
+  purge(@Param('id') id: string) {
+    return this.service.purge(id);
+  }
+
   @Post(':id/complete')
   complete(@Param('id') id: string) {
     return this.service.complete(id);
