@@ -66,6 +66,7 @@ export class PublicTrackingController {
         ? { name: currentPhase.name, orderIndex: currentPhase.orderIndex }
         : null,
       phases,
+      diagnosis: order.diagnosis || null,
     };
   }
 }

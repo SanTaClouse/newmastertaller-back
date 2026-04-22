@@ -55,6 +55,10 @@ export class UpdateWorkOrderDto {
   @IsOptional()
   description?: string;
 
+  @IsString()
+  @IsOptional()
+  diagnosis?: string;
+
   @IsOptional()
   laborCost?: number;
 

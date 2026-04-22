@@ -34,6 +34,9 @@ export class WorkOrder {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ type: 'text', nullable: true })
+  diagnosis: string;
+
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   laborCost: number;
 
