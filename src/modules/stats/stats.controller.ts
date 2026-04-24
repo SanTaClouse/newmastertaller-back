@@ -9,8 +9,8 @@ export class StatsController {
   getDashboard() { return this.service.getDashboard(); }
 
   @Get('weekly')
-  getWeekly(@Query('weekStart') weekStart?: string) {
-    return this.service.getWeekly(weekStart);
+  getWeekly(@Query('weekStart') weekStart?: string, @Query('tzOffset') tzOffset?: string) {
+    return this.service.getWeekly(weekStart, tzOffset ? parseInt(tzOffset) : 0);
   }
 
   @Get('monthly')

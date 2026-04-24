@@ -40,9 +40,15 @@ export class StatsService {
     return base;
   }
 
-  private dayRange(base: Date, offset: number): [Date, Date] {
-    const s = new Date(base.getFullYear(), base.getMonth(), base.getDate() + offset, 0, 0, 0, 0);
-    const e = new Date(base.getFullYear(), base.getMonth(), base.getDate() + offset, 23, 59, 59, 999);
+  // tzOffset = minutes returned by browser's getTimezoneOffset() (positive for UTC-3)
+  // local midnight = UTC midnight + tzOffset minutes
+  private dayRange(base: Date, offset: number, tzOffset = 0): [Date, Date] {
+    const localMidnightUTC = new Date(Date.UTC(
+      base.getFullYear(), base.getMonth(), base.getDate() + offset,
+      0, 0, 0, 0,
+    ));
+    const s = new Date(localMidnightUTC.getTime() + tzOffset * 60 * 1000);
+    const e = new Date(s.getTime() + 24 * 60 * 60 * 1000 - 1);
     return [s, e];
   }
 
@@ -78,17 +84,19 @@ export class StatsService {
     return { weekProfit, prevWeekProfit, weekRevenue, activeOrders, delayedOrders, profitDiff: weekProfit - prevWeekProfit, dailyData };
   }
 
-  async getWeekly(weekStart?: string) {
+  async getWeekly(weekStart?: string, tzOffset = 0) {
     const tenantId = TenantContext.getTenantId();
     const base = this.parseWeekBase(weekStart);
     const result: { date: string; revenue: number; profit: number; count: number }[] = [];
 
     for (let i = 0; i < 7; i++) {
-      const [dayStart, dayEnd] = this.dayRange(base, i);
+      const [dayStart, dayEnd] = this.dayRange(base, i, tzOffset);
       const orders = await this.orderRepo.find({ where: { tenantId, enteredAt: Between(dayStart, dayEnd) } });
       const revenue = orders.reduce((s, o) => s + Number(o.totalPrice), 0);
       const profit = await this.calcProfit(orders);
-      result.push({ date: format(dayStart, 'yyyy-MM-dd'), revenue, profit, count: orders.length });
+      // Return the local date label (subtract tzOffset to get local midnight back)
+      const localDate = new Date(dayStart.getTime() - tzOffset * 60 * 1000);
+      result.push({ date: format(localDate, 'yyyy-MM-dd'), revenue, profit, count: orders.length });
     }
     return result;
   }

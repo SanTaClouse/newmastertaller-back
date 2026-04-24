@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { customAlphabet } from 'nanoid';
+import { differenceInDays } from 'date-fns';
 import { WorkOrder, WorkOrderStatus } from './work-order.entity';
 import { WorkOrderPhaseLog } from './work-order-phase-log.entity';
 import { Vehicle } from '../vehicles/vehicle.entity';
@@ -36,6 +37,17 @@ export class WorkOrdersService {
     return code!;
   }
 
+  private computeTimeFields(order: WorkOrder) {
+    const isClosed = order.status === WorkOrderStatus.COMPLETED
+                  || order.status === WorkOrderStatus.RETIRED;
+    const end = isClosed
+      ? new Date((order.retiredAt ?? order.completedAt) as Date)
+      : new Date();
+    const daysInShop = differenceInDays(end, new Date(order.enteredAt));
+    const isDelayed = !isClosed && daysInShop >= 3;
+    return { daysInShop, isDelayed };
+  }
+
   private async buildOrderResponse(order: WorkOrder) {
     const tenantId = order.tenantId;
     const expenses = await this.expenseRepo.find({ where: { workOrderId: order.id, tenantId } });
@@ -48,10 +60,10 @@ export class WorkOrdersService {
     const totalExpenses = expenses.reduce((s, e) => s + Number(e.cost), 0);
     const netProfit = Number(order.totalPrice) - totalExpenses;
 
-    return { ...order, vehicle, client, expenses, phaseLogs, totalExpenses, netProfit };
+    return { ...order, vehicle, client, expenses, phaseLogs, totalExpenses, netProfit, ...this.computeTimeFields(order) };
   }
 
-  async findAll(page = 1, limit = 20, status?: string, search?: string, from?: string, to?: string, includeFinancials = false, vehicleId?: string) {
+  async findAll(page = 1, limit = 20, status?: string, search?: string, from?: string, to?: string, includeFinancials = false, vehicleId?: string, isDelayed?: boolean) {
     const tenantId = TenantContext.getTenantId();
     const qb = this.orderRepo.createQueryBuilder('wo')
       .leftJoinAndMapOne('wo.vehicle', Vehicle, 'v', 'CAST(v.id AS varchar) = wo."vehicleId"')
@@ -61,9 +73,17 @@ export class WorkOrdersService {
       .take(limit);
 
     if (status) qb.andWhere('wo.status = :status', { status });
+
+    // isDelayed = active orders that have been in the shop >= 3 days
+    if (isDelayed) {
+      const threshold = new Date();
+      threshold.setDate(threshold.getDate() - 3);
+      qb.andWhere('wo.status IN (:...activeStatuses)', { activeStatuses: ['new', 'progress', 'incomplete'] });
+      qb.andWhere('wo."enteredAt" <= :threshold', { threshold });
+    }
+
     if (from) qb.andWhere('wo.enteredAt >= :from', { from });
     if (to) {
-      // Include the full day by setting end to 23:59:59
       const toEnd = new Date(to);
       toEnd.setHours(23, 59, 59, 999);
       qb.andWhere('wo.enteredAt <= :toEnd', { toEnd });
@@ -83,7 +103,7 @@ export class WorkOrdersService {
       return { data: enriched, total, page, limit };
     }
 
-    return { data, total, page, limit };
+    return { data: data.map((o) => ({ ...o, ...this.computeTimeFields(o) })), total, page, limit };
   }
 
   async findOne(id: string) {

@@ -6,7 +6,6 @@ import {
 export enum WorkOrderStatus {
   NEW = 'new',
   PROGRESS = 'progress',
-  DELAYED = 'delayed',
   COMPLETED = 'completed',
   INCOMPLETE = 'incomplete',
   RETIRED = 'retired',

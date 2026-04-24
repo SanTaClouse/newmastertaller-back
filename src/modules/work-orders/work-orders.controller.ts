@@ -19,8 +19,9 @@ export class WorkOrdersController {
     @Query('to') to?: string,
     @Query('includeFinancials') includeFinancials?: string,
     @Query('vehicleId') vehicleId?: string,
+    @Query('isDelayed') isDelayed?: string,
   ) {
-    return this.service.findAll(page, limit, status, search, from, to, includeFinancials === 'true', vehicleId);
+    return this.service.findAll(page, limit, status, search, from, to, includeFinancials === 'true', vehicleId, isDelayed === 'true');
   }
 
   @Get(':id')
