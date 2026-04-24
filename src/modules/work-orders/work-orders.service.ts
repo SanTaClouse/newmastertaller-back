@@ -63,12 +63,13 @@ export class WorkOrdersService {
     return { ...order, vehicle, client, expenses, phaseLogs, totalExpenses, netProfit, ...this.computeTimeFields(order) };
   }
 
-  async findAll(page = 1, limit = 20, status?: string, search?: string, from?: string, to?: string, includeFinancials = false, vehicleId?: string, isDelayed?: boolean) {
+  async findAll(page = 1, limit = 20, status?: string, search?: string, from?: string, to?: string, includeFinancials = false, vehicleId?: string, isDelayed?: boolean, completedFrom?: string, completedTo?: string) {
     const tenantId = TenantContext.getTenantId();
+    const orderByField = completedFrom || completedTo ? 'wo.completedAt' : 'wo.createdAt';
     const qb = this.orderRepo.createQueryBuilder('wo')
       .leftJoinAndMapOne('wo.vehicle', Vehicle, 'v', 'CAST(v.id AS varchar) = wo."vehicleId"')
       .where('wo.tenantId = :tenantId', { tenantId })
-      .orderBy('wo.createdAt', 'DESC')
+      .orderBy(orderByField, 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 
@@ -87,6 +88,13 @@ export class WorkOrdersService {
       const toEnd = new Date(to);
       toEnd.setHours(23, 59, 59, 999);
       qb.andWhere('wo.enteredAt <= :toEnd', { toEnd });
+    }
+
+    if (completedFrom) qb.andWhere('wo.completedAt >= :completedFrom', { completedFrom });
+    if (completedTo) {
+      const completedToEnd = new Date(completedTo);
+      completedToEnd.setHours(23, 59, 59, 999);
+      qb.andWhere('wo.completedAt <= :completedToEnd', { completedToEnd });
     }
     if (search) {
       qb.andWhere(
