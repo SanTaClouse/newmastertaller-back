@@ -66,7 +66,13 @@ export class StatsService {
     const prevOrders = await this.orderRepo.find({ where: { tenantId, enteredAt: Between(prevWeekStart, prevWeekEnd) } });
 
     const activeOrders = await this.orderRepo.count({ where: { tenantId, status: WorkOrderStatus.PROGRESS } });
-    const delayedOrders = await this.orderRepo.count({ where: { tenantId, status: WorkOrderStatus.DELAYED } });
+    const delayThreshold = subDays(now, 3);
+    const delayedOrders = await this.orderRepo
+      .createQueryBuilder('wo')
+      .where('wo.tenantId = :tenantId', { tenantId })
+      .andWhere('wo.status IN (:...statuses)', { statuses: ['new', 'progress', 'incomplete'] })
+      .andWhere('wo.enteredAt <= :threshold', { threshold: delayThreshold })
+      .getCount();
 
     const weekProfit = await this.calcProfit(weekOrders);
     const prevWeekProfit = await this.calcProfit(prevOrders);

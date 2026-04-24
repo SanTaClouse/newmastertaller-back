@@ -42,7 +42,7 @@ export class BootstrapSeedService implements OnApplicationBootstrap {
       await this.seedEmpresaFalsa();
       this.logger.log('Bootstrap seed completed');
     } catch (err) {
-      this.logger.error('Bootstrap seed failed (non-fatal):', err?.message ?? err);
+      this.logger.error('Bootstrap seed failed (non-fatal):', (err as Error)?.message ?? err);
     }
   }
 
@@ -149,7 +149,7 @@ export class BootstrapSeedService implements OnApplicationBootstrap {
       { vIdx: 0, cIdx: 0, description: 'Cambio de aceite + filtros', totalPrice: 45000, laborCost: 30000, status: WorkOrderStatus.NEW, daysAgo: 0, phaseIdx: 0 },
       { vIdx: 1, cIdx: 1, description: 'Cambio de correa de distribución', totalPrice: 120000, laborCost: 85000, status: WorkOrderStatus.PROGRESS, daysAgo: 2, phaseIdx: 2 },
       { vIdx: 2, cIdx: 2, description: 'Service completo 50.000km', totalPrice: 85000, laborCost: 45000, status: WorkOrderStatus.PROGRESS, daysAgo: 1, phaseIdx: 3 },
-      { vIdx: 3, cIdx: 3, description: 'Cambio de pastillas + discos', totalPrice: 95000, laborCost: 35000, status: WorkOrderStatus.DELAYED, daysAgo: 6, phaseIdx: 3 },
+      { vIdx: 3, cIdx: 3, description: 'Cambio de pastillas + discos', totalPrice: 95000, laborCost: 35000, status: WorkOrderStatus.PROGRESS, daysAgo: 6, phaseIdx: 3 },
       { vIdx: 4, cIdx: 4, description: 'Diagnóstico electrónico', totalPrice: 25000, laborCost: 25000, status: WorkOrderStatus.NEW, daysAgo: 0, phaseIdx: 0 },
       { vIdx: 5, cIdx: 5, description: 'Reparación de aire acondicionado', totalPrice: 75000, laborCost: 40000, status: WorkOrderStatus.COMPLETED, daysAgo: 5, phaseIdx: 6, completedDaysAgo: 1 },
       { vIdx: 6, cIdx: 6, description: 'Alineación y balanceo', totalPrice: 35000, laborCost: 27000, status: WorkOrderStatus.RETIRED, daysAgo: 7, phaseIdx: 6, completedDaysAgo: 3, retiredDaysAgo: 2 },
